@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
 from datetime import datetime
-from app.database.config import Base
+from database.config import Base
 
 class CustomerPrediction(Base):
     __tablename__ = "customer_prediction"

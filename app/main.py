@@ -1,10 +1,11 @@
 from fastapi import FastAPI,Depends
 from database.config import Base,SessionLocal,engine
-from database.models import CustomerPredictionCreate
+from database.schema import CustomerPredictionCreate
 from database.config import get_db
 from core.core import create_prediction
 from sqlalchemy.orm import Session
-
+from core.model_loader import model,scaler,feature_names
+import pandas as pd
 
 Base.metadata.create_all(bind=engine)
 
@@ -43,4 +44,32 @@ def predict(
         "churn_risk_score": result.churn_risk_score,
         "will_churn": result.will_churn
     }
+    
+@app.get('/model-info')
+def model_info():
+    return {
+        "message": "Model loaded successfully",
+        "total_features": len(feature_names)
+    }
+
+@app.post("/churn_predict")
+def prediction_churn(customer_data: CustomerPredictionCreate):
+    df = pd.DataFrame([customer_data])
+    
+    
+    # এখানে Feature Engineering যোগ করব
+    
+    # Feature Order
+    df = df[feature_names]
+
+    # Scaling
+    X = scaler.transform(df)
+
+    # Prediction
+    prediction = model.predict(X)[0]
+
+    # Probability
+    probability = model.predict_proba(X)[0][1]
+
+    return prediction, probability
     
